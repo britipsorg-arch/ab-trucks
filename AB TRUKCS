@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AB TRUCKS</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#050810;color:white;font-family:Arial,sans-serif}
+header{text-align:center;padding:14px;background:#080f1d;border-bottom:1px solid #167dba}
+header h1{margin:0;color:#20cfff;letter-spacing:3px}
+header p{margin:5px;color:#a8c6dc;font-size:13px}
+main{max-width:950px;margin:auto;padding:12px}
+#game{position:relative;width:100%;height:min(62vh,520px);min-height:340px;overflow:hidden;border:1px solid #1689bc;border-radius:12px;background:#87c7eb}
+canvas{width:100%;height:100%;display:block}
+#hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.badge{background:#07111de8;border:1px solid #20cfff;padding:8px 10px;border-radius:8px;font-size:13px}
+#message{position:absolute;top:48px;left:10px;background:#07111ddd;padding:8px;border-radius:7px;font-size:12px}
+.controls{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}
+.group{display:flex;gap:8px;align-items:center}
+button{background:#10263b;color:white;border:1px solid #20cfff;border-radius:10px;padding:15px 18px;font-size:17px;font-weight:bold;cursor:pointer;touch-action:none}
+button:active{background:#12628a}
+#gas{background:#087eaa}
+#brake{background:#522631;border-color:#ff758b}
+.help{color:#a8c6dc;text-align:center;font-size:13px;line-height:1.5}
+</style>
+</head>
+<body>
+<header>
+<h1>🅰️🅱️ AB TRUCKS</h1>
+<p>SIMULADOR DE CAMINHÕES • PROTÓTIPO 3D</p>
+</header>
+<main>
+<div id="game">
+<canvas id="scene"></canvas>
+<div id="hud">
+<div class="badge">VELOCIDADE: <b id="speed">0</b> km/h</div>
+<div class="badge">DISTÂNCIA: <b id="distance">0</b> m</div>
+</div>
+<div id="message">Motor ligado • Prepare-se para viajar!</div>
+</div>
+<div class="controls">
+<div class="group">
+<button id="left" aria-label="Virar para esquerda">◀</button>
+<button id="right" aria-label="Virar para direita">▶</button>
+</div>
+<div class="group">
+<button id="brake">FREIO</button>
+<button id="gas">ACELERAR</button>
+</div>
+</div>
+<p class="help">Use ◀ ▶ para virar e segure ACELERAR para andar.<br>Este é o primeiro protótipo visual; vamos evoluir a direção e o cenário nas próximas etapas.</p>
+</main>
+<script>
+const canvas=document.getElementById("scene");
+const ctx=canvas.getContext("2d");
+let speed=0, distance=0, steer=0, roadShift=0;
+let gas=false, brake=false, left=false, right=false;
+let last=performance.now();
+
+function resize(){
+ const r=canvas.getBoundingClientRect();
+ const d=Math.min(window.devicePixelRatio||1,2);
+ canvas.width=Math.round(r.width*d);
+ canvas.height=Math.round(r.height*d);
+ ctx.setTransform(d,0,0,d,0,0);
+}
+window.addEventListener("resize",resize);
+resize();
+
+function polygon(points,color){
+ ctx.fillStyle=color;ctx.beginPath();
+ points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+ ctx.closePath();ctx.fill();
+}
+
+function drawTruck(w,h){
+ const x=w/2+steer*w*.13;
+ const y=h*.69;
+ // sombra
+ ctx.fillStyle="#17232b";
+ ctx.beginPath();ctx.ellipse(x,y+42,72,17,0,0,Math.PI*2);ctx.fill();
+ // rodas
+ ctx.fillStyle="#11151b";
+ [[-53,25],[43,25],[-48,65],[42,65]].forEach(([dx,dy])=>{
+   ctx.fillRect(x+dx-10,y+dy,20,35);
+ });
+ // chassi
+ polygon([[x-57,y+20],[x+52,y+20],[x+60,y+76],[x-59,y+76]],"#263744");
+ // cabine azul
+ polygon([[x-52,y-45],[x+25,y-45],[x+48,y-15],[x+48,y+55],[x-52,y+55]],"#087eb5");
+ // teto e detalhes
+ polygon([[x-48,y-45],[x+22,y-45],[x+31,y-31],[x-48,y-31]],"#20cfff");
+ polygon([[x-39,y-34],[x+20,y-34],[x+34,y-8],[x-39,y-8]],"#102333");
+ // grade
+ polygon([[x+9,y+8],[x+44,y+8],[x+44,y+43],[x+9,y+43]],"#17232c");
+ for(let i=0;i<4;i++){
+   ctx.fillStyle="#71899a";ctx.fillRect(x+13,y+12+i*7,27,3);
+ }
+ // faróis
+ ctx.fillStyle="#fff3ad";ctx.fillRect(x+34,y+42,12,9);
+ // marca AB
+ ctx.fillStyle="white";ctx.font="bold 17px Arial";ctx.fillText("AB",x-30,y+20);
+}
+
+function draw(now){
+ const w=canvas.clientWidth,h=canvas.clientHeight;
+ ctx.clearRect(0,0,w,h);
+ // céu
+ let sky=ctx.createLinearGradient(0,0,0,h*.65);
+ sky.addColorStop(0,"#55b7ed");sky.addColorStop(1,"#d7f0ff");
+ ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+ // nuvens
+ ctx.fillStyle="#ffffff99";
+ [[w*.17,h*.15],[w*.76,h*.19]].forEach(([x,y])=>{
+   ctx.beginPath();ctx.ellipse(x,y,32,10,0,0,Math.PI*2);ctx.fill();
+   ctx.beginPath();ctx.ellipse(x+15,y-7,20,12,0,0,Math.PI*2);ctx.fill();
+ });
+ // montanhas
+ polygon([[0,h*.45],[w*.18,h*.23],[w*.35,h*.46],[w*.53,h*.26],[w*.76,h*.47],[w*.91,h*.31],[w,h*.43],[w,h*.65],[0,h*.65]],"#668c83");
+ // campos
+ ctx.fillStyle="#578d50";ctx.fillRect(0,h*.45,w,h*.55);
+ // estrada em perspectiva
+ const cx=w/2-steer*w*.08;
+ polygon([[cx-w*.07,h*.39],[cx+w*.07,h*.39],[w*.98,h],[w*.02,h]],"#333b44");
+ // acostamento
+ polygon([[cx-w*.08,h*.39],[cx-w*.07,h*.39],[w*.02,h],[0,h]],"#d6d9dc");
+ polygon([[cx+w*.07,h*.39],[cx+w*.08,h*.39],[w,h],[w*.98,h]],"#d6d9dc");
+ // faixas da estrada
+ for(let i=0;i<10;i++){
+   let t=((i/10+roadShift)%1);
+   let y=h*.4+t*t*h*.7;
+   let width=2+t*5;
+   ctx.fillStyle="#fff";
+   ctx.fillRect(cx-width/2,y,width,Math.max(2,t*24));
+ }
+ // vegetação simples
+ for(let i=0;i<8;i++){
+   let t=((i/8+roadShift*.4)%1);
+   let y=h*.43+t*t*h*.5;
+   let size=4+t*17;
+   let x=i%2===0?w*.09+t*w*.06:w*.91-t*w*.06;
+   polygon([[x,y-size*2],[x-size,y],[x+size,y]],"#245d3d");
+   ctx.fillStyle="#68492e";ctx.fillRect(x-2,y,size*.25,size);
+ }
+ drawTruck(w,h);
+}
+
+function loop(now){
+ const dt=Math.min((now-last)/1000,.05);last=now;
+ if(gas)speed=Math.min(120,speed+30*dt);
+ else speed=Math.max(0,speed-8*dt);
+ if(brake)speed=Math.max(0,speed-65*dt);
+ if(left)steer=Math.max(-1,steer-1.8*dt);
+ if(right)steer=Math.min(1,steer+1.8*dt);
+ if(!left&&!right)steer*=Math.max(0,1-1.8*dt);
+ distance+=speed/3.6*dt;
+ roadShift=(roadShift+speed*dt*.002)%1;
+ document.getElementById("speed").textContent=Math.round(speed);
+ document.getElementById("distance").textContent=Math.floor(distance);
+ draw(now);
+ requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function bind(id,key){
+ const el=document.getElementById(id);
+ const on= e=>{e.preventDefault();window[key]=true;};
+ const off= e=>{e.preventDefault();window[key]=false;};
+ el.addEventListener("pointerdown",on);
+ ["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,off));
+}
+bind("gas","gas");
+bind("brake","brake");
+bind("left","left");
+bind("right","right");
+
+window.addEventListener("keydown",e=>{
+ if(["ArrowUp","w","W"].includes(e.key))gas=true;
+ if(["ArrowDown","s","S"," "].includes(e.key))brake=true;
+ if(["ArrowLeft","a","A"].includes(e.key))left=true;
+ if(["ArrowRight","d","D"].includes(e.key))right=true;
+});
+window.addEventListener("keyup",e=>{
+ if(["ArrowUp","w","W"].includes(e.key))gas=false;
+ if(["ArrowDown","s","S"," "].includes(e.key))brake=false;
+ if(["ArrowLeft","a","A"].includes(e.key))left=false;
+ if(["ArrowRight","d","D"].includes(e.key))right=false;
+});
+</script>
+</body>
+</html>
