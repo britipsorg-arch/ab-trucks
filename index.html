@@ -11,172 +11,190 @@
 
 body {
     margin: 0;
-    background: #101820;
+    background: #080e18;
     color: white;
     font-family: Arial, sans-serif;
     text-align: center;
 }
 
-header {
-    background: #101c30;
-    padding: 18px;
-    border-bottom: 3px solid #008cff;
+.screen {
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 25px;
 }
 
-h1 { color: #00aaff; margin: 0; }
-
-#game {
-    position: relative;
-    width: 100%;
-    height: 520px;
-    overflow: hidden;
-    background: linear-gradient(#79b9e8 0%, #c5e3f5 48%, #39743a 48%);
+#home {
+    display: flex;
+    background: linear-gradient(145deg,#080e18,#15304c);
 }
 
-.road {
-    position: absolute;
-    bottom: 0;
-    left: 15%;
-    width: 70%;
-    height: 100%;
-    background: #383838;
-    border-left: 7px solid white;
-    border-right: 7px solid white;
+.logo {
+    color: #00aaff;
+    font-size: 42px;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
-.lane {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    height: 100%;
-    border-left: 5px dashed #f7dc48;
-}
+h1 { color: #00aaff; }
 
-.truck {
-    position: absolute;
-    bottom: 35px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 105px;
-    height: 160px;
-    transition: left .12s;
-}
-
-.cabin {
-    position: absolute;
-    top: 0;
-    left: 8px;
-    width: 89px;
-    height: 90px;
-    background: #d71920;
-    border: 4px solid #8b1015;
-    border-radius: 15px 15px 5px 5px;
-}
-
-.window {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 57px;
-    height: 32px;
-    background: #8bd6f5;
-    border: 3px solid #222;
-    border-radius: 5px;
-}
-
-.grille {
-    position: absolute;
-    bottom: 8px;
-    left: 20px;
-    width: 42px;
-    height: 28px;
-    background: #252525;
-    border: 3px solid silver;
-}
-
-.wheel {
-    position: absolute;
-    width: 18px;
-    height: 34px;
-    background: #111;
-    border-radius: 5px;
-}
-
-.w1 { top: 35px; left: -3px; }
-.w2 { top: 35px; right: -3px; }
-.w3 { bottom: 4px; left: -3px; }
-.w4 { bottom: 4px; right: -3px; }
-
-.controls {
-    padding: 20px;
+.subtitle {
+    color: #aabbd0;
+    margin-bottom: 35px;
 }
 
 button {
-    background: #008cff;
-    color: white;
-    border: 0;
+    width: 260px;
+    padding: 17px;
+    margin: 9px;
+    border: 1px solid #168cff;
     border-radius: 9px;
-    padding: 17px 28px;
-    margin: 7px;
-    font-size: 20px;
+    background: #102c49;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
 }
 
-button:active { background: #0055aa; }
+button:hover {
+    background: #087dcc;
+}
 
-#status { color: #00d5ff; }
+.primary {
+    background: #008cff;
+}
 
 footer {
-    padding: 15px;
-    color: #aaa;
+    margin-top: 35px;
+    color: #77899e;
+    font-size: 13px;
+}
+
+#menu {
+    background: linear-gradient(145deg,#080e18,#142c45);
+}
+
+.card {
+    background: #14243a;
+    border: 1px solid #087dcc;
+    border-radius: 12px;
+    padding: 18px;
+    width: min(100%, 330px);
+    margin: 10px;
+}
+
+#garage {
+    background: #101c30;
+}
+
+.truck {
+    font-size: 85px;
+    margin: 25px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-<h1>🚛 AB TRUCK SIMULATOR</h1>
-<p>🅰️🅱️ AB GAMES</p>
-</header>
+<!-- TELA INICIAL -->
 
-<div id="game">
-    <div class="road">
-        <div class="lane"></div>
+<section id="home" class="screen">
+    <div class="logo">🅰️🅱️</div>
+    <h1>AB TRUCK SIMULATOR</h1>
+    <p class="subtitle">O seu caminho começa aqui.</p>
+
+    <button class="primary" onclick="showScreen('menu')">
+        🚛 JOGAR
+    </button>
+
+    <footer>AB GAMES © 2026<br>DESAFIE SEUS LIMITES</footer>
+</section>
+
+<!-- MENU PRINCIPAL -->
+
+<section id="menu" class="screen">
+    <h1>AB TRUCK SIMULATOR</h1>
+    <p class="subtitle">MENU PRINCIPAL</p>
+
+    <div class="card">
+        🚛 SCANIA VERMELHA
+        <p>Seu caminhão está esperando!</p>
     </div>
 
-    <div class="truck" id="truck">
-        <div class="cabin">
-            <div class="window"></div>
-            <div class="grille"></div>
-        </div>
-        <div class="wheel w1"></div>
-        <div class="wheel w2"></div>
-        <div class="wheel w3"></div>
-        <div class="wheel w4"></div>
+    <button class="primary" onclick="showScreen('garage')">
+        🚛 GARAGEM
+    </button>
+
+    <button onclick="showScreen('map')">
+        🗺️ MAPA
+    </button>
+
+    <button onclick="showScreen('jobs')">
+        📦 EMPREGOS
+    </button>
+
+    <button onclick="showScreen('settings')">
+        ⚙️ CONFIGURAÇÕES
+    </button>
+
+    <button onclick="showScreen('home')">
+        ↩️ VOLTAR
+    </button>
+</section>
+
+<!-- GARAGEM -->
+
+<section id="garage" class="screen">
+    <h1>🚛 GARAGEM AB</h1>
+    <div class="truck">🚛</div>
+    <h2>SCANIA VERMELHA</h2>
+    <p>Seu primeiro caminhão.</p>
+    <button onclick="showScreen('menu')">VOLTAR AO MENU</button>
+</section>
+
+<!-- MAPA -->
+
+<section id="map" class="screen">
+    <h1>🗺️ MAPA</h1>
+    <div class="card">
+        <h2>ESTADO DE SÃO PAULO</h2>
+        <p>Nosso mundo aberto está em construção!</p>
+        <p>Próxima etapa: primeira cidade.</p>
     </div>
-</div>
+    <button onclick="showScreen('menu')">VOLTAR AO MENU</button>
+</section>
 
-<h3 id="status">SCANIA VERMELHA — PRONTA PARA VIAJAR</h3>
+<!-- EMPREGOS -->
 
-<div class="controls">
-    <button onclick="move(-1)">⬅️</button>
-    <button onclick="move(1)">➡️</button>
-</div>
+<section id="jobs" class="screen">
+    <h1>📦 EMPREGOS</h1>
+    <div class="card">
+        <h3>Transportadora AB</h3>
+        <p>Em breve: vagas para entregas.</p>
+    </div>
+    <button onclick="showScreen('menu')">VOLTAR AO MENU</button>
+</section>
 
-<footer>
-AB GAMES © 2026 — Desafie seus limites.
-</footer>
+<!-- CONFIGURAÇÕES -->
+
+<section id="settings" class="screen">
+    <h1>⚙️ CONFIGURAÇÕES</h1>
+    <div class="card">
+        <p>AB TRUCK SIMULATOR</p>
+        <p>Versão 1.0</p>
+    </div>
+    <button onclick="showScreen('menu')">VOLTAR AO MENU</button>
+</section>
 
 <script>
-let position = 50;
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.style.display = 'none';
+    });
 
-function move(direction) {
-    position += direction * 5;
-    position = Math.max(23, Math.min(77, position));
-
-    document.getElementById("truck").style.left =
-        position + "%";
+    document.getElementById(screenId).style.display = 'flex';
 }
 </script>
 
